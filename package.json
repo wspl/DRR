@@ -1,0 +1,27 @@
+{
+  "name": "dist-remote-res",
+  "version": "0.0.1",
+  "description": "A simple REST server for distrubuting remote resources to local storage and cloud storages.",
+  "main": "entry.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wspl/dist-remote-res.git"
+  },
+  "author": "Plutonist",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/wspl/dist-remote-res/issues"
+  },
+  "homepage": "https://github.com/wspl/dist-remote-res#readme",
+  "dependencies": {
+    "async": "^1.4.2",
+    "babel": "^5.8.23",
+    "exectimer": "^1.1.0",
+    "koa": "^1.0.0",
+    "koa-bodyparser": "^2.0.1",
+    "koa-router": "^5.2.0"
+  }
+}
