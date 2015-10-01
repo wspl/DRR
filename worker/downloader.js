@@ -24,13 +24,15 @@ function initTask() {
 
   const defaultName = id + path.extname(url.parse(task.content.src).pathname);
 
-  fileName = task.file_name || defaultName;
+  //console.log(task);
+
+  fileName = task.content.file_name || defaultName;
 
   config.targets.forEach((val) => {
     targets[val.target] = val;
   });
 
-  const folder = task.folder ? `/${task.folder}/` : '/';
+  const folder = task.content.folder ? `/${task.content.folder}/` : '/';
   const targetDir = targets.local.path + folder;
 
   localPath = targetDir + fileName;
@@ -40,6 +42,7 @@ function initTask() {
 }
 
 function download () {
+  console.log('Saving to: ' + localPath);
   try {
     const stream = request(sourceUrl, { timeout: 5000 }).on('error', (err) => {
       process.send({ fail: task, error: err });
