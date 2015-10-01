@@ -4,7 +4,7 @@ A simple REST server for distrubuting remote resources to local storage and clou
 
 ## What's this?
 
-I was writting a spider via pyspider when I want to download the images in the articles. I found that I have to import a request&download module in order to save these images. However, my pyspider was running in docker and it's weird to mount a directory to outside system or another docker. So the idea was occurred to me, which can downloading some  static resources independently, reusable and easy to control the target (e.g. outdrive, dropbox, aws ...).
+I was trying to write a spider with pyspider, and then I plan to download images in articles. But I found that I have to import request&download module in order to save these images. However, my pyspider server was running in a docker container and it's weird to mount a directory to outside filesystem or another container. So the idea was occurred to me, which is reusable, easy to control the target (e.g. outdrive, dropbox, aws ...) and able to download static resources independently.
 
 ## Usage
 
@@ -74,4 +74,4 @@ Finishing a task forcely.
 `project_name` - [Integer]
 The amount of downloader proecesses.
 
-**WARNING: ** DON'T LAUNCH A RUNNNING WORKER AGAIN.
+**WARNING:** DON'T LAUNCH A RUNNNING WORKER AGAIN.
