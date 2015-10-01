@@ -17,13 +17,14 @@ export default class Project {
     this.taskIndexer = {};
     this.dbPath = `./projects/${this.name}.pro`;
     this.writeQueue = async.queue((task, callback) => {
-      console.log('written');
-      fs.writeFile(this.dbPath, zlib.deflateSync(JSON.stringify(this.my)), callback);
+      //console.log('written');
+      const buf = zlib.deflateSync(JSON.stringify(this.my));
+      fs.writeFile(this.dbPath, buf, callback);
     }, 1);
   }
   checkCache () {
     if (!this.isCached) {
-      console.log('checkCache!');
+      //console.log('checkCache!');
       try {
         this.isCached = true;
         const buf = zlib.inflateSync(fs.readFileSync(this.dbPath));
@@ -47,6 +48,12 @@ export default class Project {
     this.checkCache();
     return this.my.tasks[this.taskIndexer[id]];
   }
+  fin (id) {
+    this.checkCache();
+    this.my.tasks[this.taskIndexer[id]].fin = true;
+    this.persistCache(id);
+    return id;
+  }
   newTask (task) {
     this.checkCache();
     const dict = '0123456789QAZWSXEDCRFVTGBYHNUJMIKOLP';
@@ -57,6 +64,7 @@ export default class Project {
     this.taskIndexer[id] = this.my.tasks.length;
     this.my.tasks[this.my.tasks.length] = {
       id: id,
+      fin: false,
       content: task
     }
     this.persistCache(id);
@@ -68,6 +76,7 @@ export default class Project {
   setConfig (config) {
     this.checkCache();
     this.my.config = config;
+    console.log(config);
     this.persistCache();
   }
   getConfig () {

@@ -2,7 +2,7 @@
   "name": "dist-remote-res",
   "version": "0.0.1",
   "description": "A simple REST server for distrubuting remote resources to local storage and cloud storages.",
-  "main": "entry.js",
+  "main": "run.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -22,6 +22,8 @@
     "exectimer": "^1.1.0",
     "koa": "^1.0.0",
     "koa-bodyparser": "^2.0.1",
-    "koa-router": "^5.2.0"
+    "koa-router": "^5.2.0",
+    "mkdirp": "^0.5.1",
+    "request": "^2.64.0"
   }
 }

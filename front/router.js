@@ -1,3 +1,4 @@
+import childProcess from 'child_process';
 import Router from 'koa-router';
 import Project from './project';
 
@@ -10,14 +11,19 @@ router.get('/', function *(next) {
 });
 
 router.put('/project/:projectName', function *(next) {
-  if (!Project.isExist(this.params.projectName)) {
-    const newProject = new Project(this.params.projectName);
-    newProject.setConfig(this.request.body);
-    projectCache[this.params.projectName] = newProject;
-    this.body = {
-      success: 'Project created successful.'
+  try {
+    if (!Project.isExist(this.params.projectName)) {
+      const newProject = new Project(this.params.projectName);
+      const config = this.request.body;
+      newProject.setConfig(config);
+      projectCache[this.params.projectName] = newProject;
+      this.body = {
+        success: 'Project created successful.'
+      }
+    } else {
+      throw 'Project already exists.';
     }
-  } else {
+  } catch (e) {
     this.body = {
       error: 'Project already exists.'
     }
@@ -45,14 +51,33 @@ router.put('/tasks/:projectName', function *(next) {
     }
 
     const start = new Date;
-    let taskID;
-    //for (let i = 0; i < 100000; i += 1) {
-      taskID = projectCache[this.params.projectName].newTask(this.request.body);
-    //}
+    let taskID = projectCache[this.params.projectName].newTask(this.request.body);
     const ms = new Date - start;
 
     this.body = {
       success: 'Task(s) added successful.',
+      exec_time: ms + 'ms',
+      task_id: taskID
+    }
+  } catch (e) {
+    this.body = {
+      error: e.message
+    }
+  }
+});
+
+router.put('/tasks/:projectName/:taskID', function *(next) {
+  try {
+    if (!projectCache[this.params.projectName]) {
+      projectCache[this.params.projectName] = new Project(this.params.projectName);
+    }
+
+    const start = new Date;
+    let taskID = projectCache[this.params.projectName].fin(this.params.taskID);
+    const ms = new Date - start;
+
+    this.body = {
+      success: 'Task(s) finished!',
       exec_time: ms + 'ms',
       task_id: taskID
     }
@@ -71,16 +96,39 @@ router.get('/tasks/:projectName/:taskID', function *(next) {
       }
 
       const start = new Date;
-      let result;
-      //for (let i = 0; i < 2500000; i += 1) {
-        result = projectCache[this.params.projectName].getTask(this.params.taskID);
-      //}
+      let result = projectCache[this.params.projectName].getTask(this.params.taskID);
       const ms = new Date - start;
 
       this.body = {
         success: 'Task(s) got successful.',
         exec_time: ms + 'ms',
         result: result
+      }
+    } else {
+      throw 'Project does not exist.'
+    }
+  } catch (e) {
+    this.body = {
+      error: e.message
+    }
+  }
+});
+
+router.delete('/tasks/:projectName/:taskID', function *(next) {
+  try {
+    if (Project.isExist(this.params.projectName)) {
+      if (!projectCache[this.params.projectName]) {
+        projectCache[this.params.projectName] = new Project(this.params.projectName);
+      }
+
+      const start = new Date;
+      let result = projectCache[this.params.projectName].fin(this.params.taskID);
+      const ms = new Date - start;
+
+      this.body = {
+        success: 'Task(s) finished.',
+        exec_time: ms + 'ms',
+        id: result
       }
     } else {
       throw 'Project does not exist.'
@@ -101,11 +149,13 @@ router.get('/tasks/:projectName', function *(next) {
 
         const start = new Date;
         let result = projectCache[this.params.projectName].getAllTasks(this.params.taskID);
+        let config = projectCache[this.params.projectName].getConfig(this.params.taskID);
         const ms = new Date - start;
 
         this.body = {
           success: 'Task(s) got successful.',
           exec_time: ms + 'ms',
+          config: config,
           result: result
         }
     } else {
@@ -117,5 +167,10 @@ router.get('/tasks/:projectName', function *(next) {
     }
   }
 });
+
+router.post('/worker/:projectName/start/:processNum', function *(next) {
+  childProcess.fork('entries/entry_worker', [this.params.projectName, this.params.processNum]);
+  this.body = 'Forked.';
+})
 
 export default router;

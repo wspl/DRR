@@ -10,22 +10,19 @@ I was writting a spider via pyspider when I want to download the images in the a
 
 ### Create a project
 
-`PUT http://127.0.0.1:3456/project`
+`PUT http://127.0.0.1:3456/project/:project_name`
 
 ####Parameters
-`name` - [String]
+`project_name` - [String]
 The name of the project that you want to create.
 
-`targets` - [ JSON Array ]
-The targets you want to save downloaded resources.
-
-Example:
+**Request body example:**
 ```json
 {
   "name": "project1",
   "targets": [{
     "target": "local",
-    "path": "/home/spiders/project1/resources"
+    "path": "./download/project1"
   },{
     "target": "onedrive",
     "sign_in_code": "one-time sign-in code here",
@@ -34,43 +31,27 @@ Example:
 }
 ```
 
-### Query a project
-
-`GET http://127.0.0.1:3456/project/:project_name`
-
-
 ### Delete a project
 
 `DELETE http://127.0.0.1:3456/project/:project_name`
 
 
-### Modify a project
-
-`PUT http://127.0.0.1:3456/project/:project_name`
-
-The parameters is similar to *create a project*.
-
 ### Add a task
 
 `PUT http://127.0.0.1:3456/tasks/:project_name`
 
-`src` - [String]
-Source url
-
-### Add tasks
-
-`PUT http://127.0.0.1:3456/tasks/:project_name`
-
-`src` - [ JSON Array ]
-
-Example:
+**Request body example**
 ```json
-["https://cdn.example.com/attachments/1.jpg", "https://cdn.example.com/attachments/2.jpg", "https://cdn.example.com/attachments/3.jpg"]
+{
+  "src": "https://cdn.v2ex.co/avatar/0421/c02f/28966_normal.png?m=1409153157",
+  "file_name": "28966.png", // optional
+  "folder": "c02f" // optional
+}
 ```
 
 ### Query all tasks
 
-`GET http://127.0.0.1:3456/tasks/:project_name/all`
+`GET http://127.0.0.1:3456/tasks/:project_name`
 
 Get informations of all tasks from a project.
 
@@ -79,3 +60,18 @@ Get informations of all tasks from a project.
 `GET http://127.0.0.1:3456/tasks/:project_name/:id`
 
 Get information of a task from a project.
+
+### Finish a task
+
+`DELETE http://127.0.0.1:3456/tasks/:project_name/:id`
+
+Finishing a task forcely.
+
+### Launch a worker of project
+
+`POST http://127.0.0.1:3456/worker/:project_name/start/:process_num`
+
+`project_name` - [Integer]
+The amount of downloader proecesses.
+
+**WARNING: ** DON'T LAUNCH A RUNNNING WORKER AGAIN.
