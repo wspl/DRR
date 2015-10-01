@@ -43,9 +43,17 @@ function forkDownloader(index, config) {
           }
         });
       } else if (m.fail) {
-        console.log(index + ') Failed, will retry: ' + m.fail.id);
-        queue.returnTask(m.fail);
-        downloaders[index].send({ new: queue.nextTask(), config: config });
+        m.fail['retry'] += 1;
+        if (m.fail['retry'] <= 3) {
+          console.log(index + ') Failed, will retry ' + m.fail['retry'] + ': ' + m.fail.id);
+          queue.returnTask(m.fail);
+          downloaders[index].send({ new: queue.nextTask(), config: config });
+        } else {
+          console.log('Cannot download: ' + m.fail.content.src);
+          queue.finTask(m.fail.id, (err, rs) => {
+            downloaders[index].send({ new: queue.nextTask(), config: config });
+          });
+        }
       }
     });
   } else {
