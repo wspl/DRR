@@ -1,8 +1,10 @@
 import childProcess from 'child_process';
 import Router from 'koa-router';
 import Project from './project';
+import Log from '../utils/log';
 
 const router = Router();
+const log = new Log('REST-API');
 
 const projectCache = {};
 
@@ -51,7 +53,15 @@ router.put('/tasks/:projectName', function *(next) {
     }
 
     const start = new Date;
-    let taskID = projectCache[this.params.projectName].newTask(this.request.body);
+    let taskID;
+    if (this.request.body.length) {
+      taskID = [];
+      this.request.body.forEach((val) => {
+        taskID.push(projectCache[this.params.projectName].newTask(val));
+      })
+    } else {
+      taskID = projectCache[this.params.projectName].newTask(this.request.body);
+    }
     const ms = new Date - start;
 
     this.body = {
@@ -168,9 +178,22 @@ router.get('/tasks/:projectName', function *(next) {
   }
 });
 
+
+const workers = {};
+
+router.post('/worker/:projectName/start', function *(next) {
+  workers[this.params.projectName] = childProcess.fork('entries/entry_worker', [this.params.projectName, 4]);
+  this.body = 'Forked: ' + this.params.projectName;
+})
+
 router.post('/worker/:projectName/start/:processNum', function *(next) {
-  childProcess.fork('entries/entry_worker', [this.params.projectName, this.params.processNum]);
-  this.body = 'Forked.';
+  workers[this.params.projectName] = childProcess.fork('entries/entry_worker', [this.params.projectName, this.params.processNum]);
+  this.body = 'Forked: ' + this.params.projectName;
+})
+
+router.post('/worker/:projectName/stop', function *(next) {
+  workers[this.params.projectName].kill();
+  this.body = 'Stopped: ' + this.params.projectName;
 })
 
 export default router;

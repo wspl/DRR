@@ -1,12 +1,15 @@
-import request from 'request';
 import fs from 'fs';
 import url from 'url';
 import path from 'path';
 import mkdirp from 'mkdirp';
+import request from 'request';
 
+import Log from '../utils/log';
+
+const log = new Log('WORKER-' + process.argv.slice(2)[0]);
 let wouldExit = false;
 
-let config, task, id , fileName, localPath, sourceUrl;
+let config, task, id , fileName, localPath, sourceUrl, targetDir, folder;
 let targets = {};
 
 process.on('message', (m) => {
@@ -20,11 +23,13 @@ process.on('message', (m) => {
 });
 
 function initTask() {
+  if (isNaN(task['retry'])) {
+    task['retry'] = 0;
+  }
+
   id = task.id;
 
   const defaultName = id + path.extname(url.parse(task.content.src).pathname);
-
-  //console.log(task);
 
   fileName = task.content.file_name || defaultName;
 
@@ -32,8 +37,8 @@ function initTask() {
     targets[val.target] = val;
   });
 
-  const folder = task.content.folder ? `/${task.content.folder}/` : '/';
-  const targetDir = targets.local.path + folder;
+  folder = task.content.folder ? `/${task.content.folder}/` : '/';
+  targetDir = targets.local.path + folder;
 
   localPath = targetDir + fileName;
   sourceUrl = task.content.src;
@@ -42,9 +47,14 @@ function initTask() {
 }
 
 function download () {
-  console.log('Saving to: ' + localPath);
   try {
-    const stream = request(sourceUrl, { timeout: 5000 }).on('error', (err) => {
+    const stream = request(sourceUrl, {
+      timeout: 10000,
+      headers: {
+        'User-Agent': `Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36
+        (KHTML, like Gecko) Chrome/44.0.2403.69 Safari/537.36 QQBrowser/9.0.2617.400`
+      }
+    }).on('error', (err) => {
       process.send({ fail: task, error: err });
     }).pipe(fs.createWriteStream(localPath)).on('finish', () => {
       process.send({ fin: task });

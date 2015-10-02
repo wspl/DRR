@@ -1,7 +1,9 @@
 import fs from 'fs';
 import zlib from 'zlib';
 import async from 'async';
+import Log from '../utils/log';
 
+const log = new Log('PROJECT');
 const projectCache = new Map();
 
 export default class Project {
@@ -76,7 +78,7 @@ export default class Project {
   setConfig (config) {
     this.checkCache();
     this.my.config = config;
-    console.log(config);
+    log.s(`A new project is created with config: ${config}`);
     this.persistCache();
   }
   getConfig () {
